@@ -1,4 +1,6 @@
 import numpy as np
+import torch
+
 from motrackers.kalman_tracker import KFTracker2D, KFTrackerSORT, KFTracker4D
 
 
@@ -238,7 +240,10 @@ class KFTrack4DSORT(Track):
     def update(self, frame_id, bbox, detection_confidence, class_id=None, lost=0, iou_score=0., **kwargs):
         super().update(
             frame_id, bbox, detection_confidence, class_id=class_id, lost=lost, iou_score=iou_score, **kwargs)
-        self.kf.update(bbox.copy())
+        if isinstance(bbox, torch.Tensor):
+            self.kf.update(bbox.clone().cpu().numpy())
+        else:
+            self.kf.update(bbox.copy())
 
 
 class KFTrackCentroid(Track):
